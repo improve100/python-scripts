@@ -2,12 +2,14 @@
 
 import sys, os
 
-oldstr = "yujin"
-newstr = "vking"
-Oldstr = "Yujin"
-Newstr = "Vking"
-OLDSTR = "YUJIN"
-NEWSTR = "VKING" 
+oldstr = "robot_localization"
+newstr = "msf_localization"
+Oldstr = "RobotLocalization"
+Newstr = "MSFLocalization"
+OLDSTR = "ROBOT_LOCALIZATION"
+NEWSTR = "MSF_LOCALIZATION" 
+
+replace_dir_count = 0
 
 def lister(root):                                           # for a root dir
     if not os.path.isdir(root):
@@ -30,6 +32,9 @@ def lister(root):                                           # for a root dir
             print('[new' + newthisdir + ']')
             thisdir = newthisdir    #have a bug: if rename the directory,os.walk cann't execute full,must run more times
             #lister(thisdir)
+	    replace_dir_count = replace_dir_count + 1
+        #else:
+	#    replace_dir_count = False
         for fname in fileshere:                             
             if fname.startswith('.'):
                 continue
@@ -46,9 +51,23 @@ def lister(root):                                           # for a root dir
                     t = t.replace(oldstr,newstr)
                     t = t.replace(Oldstr,Newstr)
                     t = t.replace(OLDSTR,NEWSTR)
+		    if t.find("#include") != -1:
+			if t.find("#ifndef") != -1:
+			    if t.find("#include") > t.find("#ifndef"):
+				t = t[t.find("#ifndef"):]
+			    else:
+				t = t[t.find("#include"):]
+			else:
+			    t = t[t.find("#include"):]
+		    elif t.find("#ifndef") != -1:
+			t = t[t.find("#ifndef"):]
                     f.seek(0, 0)    
                     f.truncate()
                     f.write(t)
 
 if __name__ == '__main__':
-    lister(sys.argv[1])                                                          
+    lister(sys.argv[1])  
+    while replace_dir_count:
+	lister(newroot)  
+	replace_dir_count = replace_dir_count - 1
+    print("complete done,have fun")                                                      
